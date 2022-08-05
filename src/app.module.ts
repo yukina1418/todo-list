@@ -3,6 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './apis/user/user.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -19,6 +20,9 @@ import { UserModule } from './apis/user/user.module';
       logging: true,
       retryAttempts: 30,
       retryDelay: 5000,
+    }),
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
   ],
   controllers: [AppController],
