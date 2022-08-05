@@ -1,0 +1,20 @@
+version: '3.7'
+
+services:
+  my-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000
+    volumes:
+      - ./src:/my/src
+
+  my-dbserver:
+    platform: linux/x86_64
+    image: mysql:latest
+    environment:
+      MYSQL_DATABASE: 'mydb'
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+      - 3306:3306
