@@ -12,6 +12,8 @@ import { LoginDto } from './dto/login-dto';
 import { Response } from 'express';
 import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { JwtRefreshStrategy } from 'src/commons/strategy/jwt-refresh-strategy';
+import { ResponseType } from 'src/commons/type/response-type';
+import { ErrorType } from 'src/commons/type/error-type';
 
 @ApiTags('auth')
 @Controller({ version: '1.0' })
@@ -29,19 +31,8 @@ export class AuthController {
   // 스웨거 설정
   @ApiBody({ type: LoginDto })
   @ApiOperation({ summary: '로그인', description: '로그인 API입니다' })
-  @ApiResponse({
-    status: 201,
-    description: '로그인을 성공했습니다.',
-    schema: { type: 'string', example: '암호화된 액세스 토큰' },
-  })
-  @ApiUnauthorizedResponse({
-    status: 401,
-    description: '로그인을 실패했습니다.',
-    schema: {
-      type: 'Error',
-      example: '아이디 혹은 비밀번호가 일치하지 않습니다.',
-    },
-  })
+  @ApiResponse({ description: ResponseType.auth.login.msg })
+  @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
   async login(
     @Res({ passthrough: true }) res: Response,
     @Body() loginDto: LoginDto,
@@ -60,24 +51,13 @@ export class AuthController {
    */
   @Post('restoreAccessToken')
   @UseGuards(JwtRefreshStrategy)
-  // 스웨거 설정
   @ApiOperation({
     summary: '액세스 토큰 재발행',
     description: '액세스 토큰 재발행 API입니다',
   })
-  @ApiResponse({
-    status: 201,
-    description: '액세스 토큰 재발행을 성공했습니다.',
-    schema: { type: 'string', example: '암호화된 액세스 토큰' },
-  })
-  @ApiForbiddenResponse({
-    status: 403,
-    description: '액세스 토큰 재발행을 실패했습니다.',
-    schema: {
-      type: 'Error',
-      example: '아이디 혹은 비밀번호가 일치하지 않습니다.',
-    },
-  })
+  // 스웨거 데코레이터
+  @ApiResponse({ description: ResponseType.auth.restoreAccessToken.msg })
+  @ApiForbiddenResponse({ description: ErrorType.auth.forbidden.msg })
   async restoreAccessToken(
     @CurrentUser() currentUser: ICurrentUser,
   ): Promise<string> {

@@ -9,6 +9,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
+import { ICurrentUser } from 'src/commons/decorator/current-user';
 
 @Injectable()
 export class UserService {
@@ -24,14 +25,13 @@ export class UserService {
    * @returns {Promise<User>} 생성된 유저의 정보를 반환합니다.
    */
 
-  async create(createUserDto: CreateUserDto): Promise<User> {
-    const { email, nickName, password, phone } = createUserDto;
+  async signup(createUserDto: CreateUserDto): Promise<User> {
+    const { email, name, password } = createUserDto;
 
     try {
       const result = await this.usersRepository.save({
         email,
-        nickName,
-        phone,
+        name,
         password: await bcrypt.hash(password, 10),
       });
 
@@ -66,13 +66,13 @@ export class UserService {
   /**
    * @description 유저를 조회합니다.
    *
-   * @param nickName
+   * @param name
    * @returns {Promise<User>} 유저 정보를 반환합니다.
    */
 
-  async findOne(nickName: string): Promise<User> {
+  async findOne(currentUser: ICurrentUser): Promise<User> {
     const isUser = await this.usersRepository.findOne({
-      where: { nickName: nickName },
+      where: { id: currentUser.id },
     });
     try {
       if (!isUser)
@@ -92,10 +92,15 @@ export class UserService {
    * @param updateUserDto 업데이트를 할 유저의 정보
    * @returns {Promise<User>} 유저 정보를 반환합니다.
    */
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
-    const { nickName } = updateUserDto;
+  async update(
+    currentUser: ICurrentUser,
+    updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    const { name } = updateUserDto;
 
-    const isUser = await this.usersRepository.findOne({ where: { id: id } });
+    const isUser = await this.usersRepository.findOne({
+      where: { id: currentUser.id },
+    });
 
     try {
       if (!isUser)
@@ -103,7 +108,7 @@ export class UserService {
 
       const result = await this.usersRepository.save({
         ...isUser,
-        nickName: nickName,
+        name: name,
       });
 
       return result;
@@ -116,17 +121,21 @@ export class UserService {
   /**
    * @description 유저의 정보를 삭제합니다.
    *
-   * @param id 유저의 id
+   * @param currentUser 유저의 id
    * @returns {Promise<boolean>} 유저 정보를 반환합니다.
    */
-  async delete(id: string): Promise<boolean> {
-    const isUser = await this.usersRepository.findOne({ where: { id: id } });
+  async delete(currentUser: ICurrentUser): Promise<boolean> {
+    const isUser = await this.usersRepository.findOne({
+      where: { id: currentUser.id },
+    });
 
     try {
       if (!isUser)
         throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-      const deletedResult = await this.usersRepository.softDelete({ id: id });
+      const deletedResult = await this.usersRepository.softDelete({
+        id: currentUser.id,
+      });
 
       return deletedResult ? false : true;
     } catch (e) {
