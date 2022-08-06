@@ -3,7 +3,6 @@ import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/create-user.dto';
 import { User } from '../entities/user.entity';
 import { UserService } from '../user.service';
-import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from '../dto/update-user.dto';
 import { ICurrentUser } from 'src/commons/decorator/current-user';
 import { ArgumentMetadata, ValidationPipe } from '@nestjs/common';
@@ -34,7 +33,7 @@ describe('UserService', () => {
   };
 
   const update = {
-    id: 'asd1-asd4-asd2',
+    id: 'asd1-asd4-asd1',
     name: '업데이트 데이터',
     email: 'test11@gmail.com',
     createdAt: '2022-07-27T08:32:50.701Z',
@@ -171,6 +170,64 @@ describe('UserService', () => {
       await expect(userService.findOne(currentUser)).rejects.toThrowError(
         '유저 데이터가 존재하지 않습니다.',
       );
+      expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('update', () => {
+    it('유저 업데이트 성공', async () => {
+      const userRepositorySpySave = jest.spyOn(userRepository, 'save');
+      const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
+      userRepository.findOne.mockResolvedValue(findOne);
+      userRepository.save.mockResolvedValue(update);
+
+      const result = await userService.update(currentUser, updateUserDto);
+
+      expect(result).toEqual(update);
+      expect(userRepositorySpySave).toHaveBeenCalledTimes(1);
+      expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
+    });
+    it('유저 업데이트 실패', async () => {
+      const userRepositorySpySave = jest.spyOn(userRepository, 'save');
+      const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
+      userRepository.findOne.mockResolvedValue(false);
+
+      await expect(
+        userService.update(currentUser, updateUserDto),
+      ).rejects.toThrowError('유저 데이터가 존재하지 않습니다.');
+      expect(userRepositorySpySave).toHaveBeenCalledTimes(0);
+      expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
+    });
+  });
+  describe('delete', () => {
+    it('유저 삭제 성공', async () => {
+      const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
+      const userRepositorySpySoftDelete = jest.spyOn(
+        userRepository,
+        'softDelete',
+      );
+
+      userRepository.findOne.mockResolvedValue(findOne);
+      userRepository.softDelete.mockResolvedValue(true);
+
+      const result = await userService.delete(currentUser);
+
+      expect(result).toEqual(false);
+      expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
+      expect(userRepositorySpySoftDelete).toHaveBeenCalledTimes(1);
+    });
+    it('유저 삭제 실패', async () => {
+      const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
+      const userRepositorySpySoftDelete = jest.spyOn(
+        userRepository,
+        'softDelete',
+      );
+      userRepository.findOne.mockResolvedValue(false);
+
+      await expect(
+        userService.update(currentUser, updateUserDto),
+      ).rejects.toThrowError('유저 데이터가 존재하지 않습니다.');
+      expect(userRepositorySpySoftDelete).toHaveBeenCalledTimes(0);
       expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
     });
   });
