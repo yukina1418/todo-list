@@ -1,14 +1,35 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { ICurrentUser } from 'src/commons/decorator/current-user';
+import { Repository } from 'typeorm';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { Category } from './entities/category.entity';
 
 @Injectable()
 export class CategoryService {
-  create(createCategoryDto: CreateCategoryDto) {
-    return 'This action adds a new category';
+  constructor(
+    @InjectRepository(Category)
+    private readonly categoryRepository: Repository<Category>,
+  ) {}
+
+  async create(
+    currentUser: ICurrentUser,
+    createCategoryDto: CreateCategoryDto,
+  ) {
+    try {
+      const result = await this.categoryRepository.save({
+        ...createCategoryDto,
+        fk_user_id: currentUser.id,
+      });
+
+      return result;
+    } catch (e) {
+      throw e;
+    }
   }
 
-  findAll() {
+  async findAll(currentUser: ICurrentUser) {
     return `This action returns all category`;
   }
 

@@ -16,9 +16,9 @@ export class Category {
   name: string;
 
   @Column('uuid')
-  fk_user_Id: string;
+  fk_user_id: string;
 
   @ManyToOne((type) => User)
-  @JoinColumn({ name: 'fk_user_Id' })
+  @JoinColumn({ name: 'fk_user_id' })
   user: User;
 }

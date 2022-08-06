@@ -15,31 +15,37 @@ import { ICurrentUser } from 'src/commons/decorator/current-user';
 export class UserService {
   constructor(
     @InjectRepository(User)
-    private readonly usersRepository: Repository<User>,
+    private readonly userRepository: Repository<User>,
   ) {}
 
   /**
    * @description 유저를 생성합니다.
    * 
-    @param createUserDto 생성할 유저 정보
+     @param createUserDto 생성할 유저 정보
    * @returns {Promise<User>} 생성된 유저의 정보를 반환합니다.
    */
 
-  async signup(createUserDto: CreateUserDto): Promise<User> {
+  async signUp(createUserDto: CreateUserDto): Promise<User> {
     const { email, name, password } = createUserDto;
 
+    const userExists = await this.userRepository.findOne({ where: { email } });
+
     try {
-      const result = await this.usersRepository.save({
+      if (userExists) throw new ConflictException();
+
+      const result = await this.userRepository.save({
         email,
         name,
         password: await bcrypt.hash(password, 10),
       });
 
+      delete result.password;
+
       return result;
     } catch (e) {
-      if (e.code === 'ER_DUP_ENTRY')
+      if ((e.status = 409 || e.code === 'ER_DUP_ENTRY'))
         throw new ConflictException('이미 사용중인 이메일입니다.');
-      return e;
+      throw e;
     }
   }
 
@@ -50,7 +56,7 @@ export class UserService {
    */
 
   async findAll(): Promise<User[]> {
-    const results = await this.usersRepository.find();
+    const results = await this.userRepository.find();
 
     try {
       if (results.length === 0)
@@ -66,29 +72,31 @@ export class UserService {
   /**
    * @description 유저를 조회합니다.
    *
-   * @param name
+   * @param currentUser
    * @returns {Promise<User>} 유저 정보를 반환합니다.
    */
 
   async findOne(currentUser: ICurrentUser): Promise<User> {
-    const isUser = await this.usersRepository.findOne({
+    const isUser = await this.userRepository.findOne({
       where: { id: currentUser.id },
     });
     try {
       if (!isUser)
         throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
+      delete isUser.password;
+
       return isUser;
     } catch (e) {
-      if (e.status === 404) return e;
-      return e;
+      if (e.status === 404) throw e;
+      throw e;
     }
   }
 
   /**
    * @description 유저를 조회합니다.
    *
-   * @param id 유저의 id
+   * @param currentUser 유저의 id
    * @param updateUserDto 업데이트를 할 유저의 정보
    * @returns {Promise<User>} 유저 정보를 반환합니다.
    */
@@ -98,7 +106,7 @@ export class UserService {
   ): Promise<User> {
     const { name } = updateUserDto;
 
-    const isUser = await this.usersRepository.findOne({
+    const isUser = await this.userRepository.findOne({
       where: { id: currentUser.id },
     });
 
@@ -106,15 +114,17 @@ export class UserService {
       if (!isUser)
         throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-      const result = await this.usersRepository.save({
+      const result = await this.userRepository.save({
         ...isUser,
         name: name,
       });
 
+      delete result.password;
+
       return result;
     } catch (e) {
-      if (e.status === 404) return e;
-      return e;
+      if (e.status === 404) throw e;
+      throw e;
     }
   }
 
@@ -125,7 +135,7 @@ export class UserService {
    * @returns {Promise<boolean>} 유저 정보를 반환합니다.
    */
   async delete(currentUser: ICurrentUser): Promise<boolean> {
-    const isUser = await this.usersRepository.findOne({
+    const isUser = await this.userRepository.findOne({
       where: { id: currentUser.id },
     });
 
@@ -133,14 +143,14 @@ export class UserService {
       if (!isUser)
         throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-      const deletedResult = await this.usersRepository.softDelete({
+      const deletedResult = await this.userRepository.softDelete({
         id: currentUser.id,
       });
 
       return deletedResult ? false : true;
     } catch (e) {
-      if (e.status === 404) return e;
-      return e;
+      if (e.status === 404) throw e;
+      throw e;
     }
   }
 }

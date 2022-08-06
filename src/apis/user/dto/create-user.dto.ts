@@ -24,7 +24,7 @@ export class CreateUserDto {
     required: true,
   })
   @IsNotEmpty({ message: '공백으로 남겨놓으실 수 없습니다.' })
-  @IsEmail({}, { message: '올바른 이메일 형식이 아닙니다.' })
+  @IsEmail()
   email: string;
 
   @ApiProperty({

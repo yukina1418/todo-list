@@ -40,7 +40,7 @@ export class UserController {
   @ApiCreatedResponse({ description: ResponseType.user.create.msg })
   @ApiConflictResponse({ description: ErrorType.user.conflict.msg })
   create(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<User> {
-    return this.userService.signup(createUserDto);
+    return this.userService.signUp(createUserDto);
   }
 
   @Get()
