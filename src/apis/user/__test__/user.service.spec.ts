@@ -92,7 +92,7 @@ describe('UserService', () => {
       const userRepositorySpySave = jest.spyOn(userRepository, 'save');
       const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
 
-      //  userRepository.findOne.mockResolvedValue(false);
+      userRepository.findOne.mockResolvedValue(false);
       userRepository.save.mockRejectedValue(save);
       userRepository.save.mockReturnValue(save);
 

@@ -7,6 +7,8 @@ import {
   Delete,
   ValidationPipe,
   UseGuards,
+  Res,
+  Req,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
@@ -27,6 +29,7 @@ import { User } from './entities/user.entity';
 import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { ResponseType } from 'src/commons/type/response-type';
 import { ErrorType } from 'src/commons/type/error-type';
+import { Request } from 'express';
 
 @ApiTags('user')
 @Controller({ path: 'user', version: '1.0' })
@@ -39,7 +42,12 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ description: ResponseType.user.create.msg })
   @ApiConflictResponse({ description: ErrorType.user.conflict.msg })
-  create(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<User> {
+  create(
+    @Req() req: Request,
+    @Body(ValidationPipe) createUserDto: CreateUserDto,
+  ): Promise<User> {
+    const offset = new Date().getTimezoneOffset();
+    console.log(offset);
     return this.userService.signUp(createUserDto);
   }
 
