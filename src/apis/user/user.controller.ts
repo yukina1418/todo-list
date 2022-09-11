@@ -30,7 +30,7 @@ import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { ResponseType } from 'src/commons/type/response-type';
 import { ErrorType } from 'src/commons/type/error-type';
 
-@ApiTags('users')
+@ApiTags('유저')
 @Controller({ path: 'users', version: '1.0' })
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -52,7 +52,7 @@ export class UserController {
     });
   }
 
-  @Get()
+  @Get('list')
   // 스웨거 데코레이터
   @ApiOperation({
     summary: '유저 전체 조회',
@@ -120,7 +120,7 @@ export class UserController {
   @ApiResponse({ description: ResponseType.user.delete.msg })
   @ApiForbiddenResponse({ description: ErrorType.user.forbidden.msg })
   @ApiNotFoundResponse({ description: ErrorType.user.notFound.msg })
-  async delete(@CurrentUser() currentUser: ICurrentUser): Promise<boolean> {
+  async delete(@CurrentUser() currentUser: ICurrentUser): Promise<string> {
     return this.userService.delete(currentUser).catch((err: unknown) => {
       if (err instanceof HttpException) {
         throw err;

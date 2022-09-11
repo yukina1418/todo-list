@@ -111,7 +111,7 @@ export class UserService {
    * @param currentUser 유저의 id
    * @returns {Promise<boolean>} 유저 정보를 반환합니다.
    */
-  async delete(currentUser: ICurrentUser): Promise<boolean> {
+  async delete(currentUser: ICurrentUser): Promise<string> {
     const isUser = await this.userRepository.findOne({
       where: { id: currentUser.id },
     });
@@ -123,6 +123,6 @@ export class UserService {
       id: currentUser.id,
     });
 
-    return deletedResult ? false : true;
+    return deletedResult ? '삭제 완료' : '삭제 실패';
   }
 }
