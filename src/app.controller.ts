@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get } from '@nestjs/common';
 import { ApiExcludeController, ApiExcludeEndpoint } from '@nestjs/swagger';
 import { AppService } from './app.service';
 
@@ -9,7 +9,7 @@ export class AppController {
 
   @Get()
   @ApiExcludeEndpoint()
-  sendSwaggerDocs(@Res() res: any): void {
-    this.appService.sendSwaggerDocs(res);
+  getHello(): string {
+    return this.appService.getHello();
   }
 }
