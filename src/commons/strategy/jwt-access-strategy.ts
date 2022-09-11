@@ -13,7 +13,7 @@ export class JwtAccessStrategy extends PassportStrategy(Strategy, 'access') {
     });
   }
 
-  validate(req: Request, payload: any) {
+  validate(req: Request, payload: any): any {
     const accessToken = req.headers.authorization.replace('Bearer ', '');
 
     if (!accessToken) throw new ForbiddenException('액세스 토큰이 없습니다.');

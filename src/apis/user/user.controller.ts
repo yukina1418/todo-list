@@ -7,8 +7,8 @@ import {
   Delete,
   ValidationPipe,
   UseGuards,
-  Req,
-  Injectable,
+  HttpException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
@@ -30,11 +30,8 @@ import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { ResponseType } from 'src/commons/type/response-type';
 import { ErrorType } from 'src/commons/type/error-type';
 
-@Injectable()
-class JwtAccessGuard extends AuthGuard('access') {}
-
-@ApiTags('user')
-@Controller({ path: 'user', version: '1.0' })
+@ApiTags('users')
+@Controller({ path: 'users', version: '1.0' })
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
@@ -44,25 +41,36 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ description: ResponseType.user.create.msg })
   @ApiConflictResponse({ description: ErrorType.user.conflict.msg })
-  create(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<User> {
-    return this.userService.signUp(createUserDto);
+  async create(
+    @Body(ValidationPipe) createUserDto: CreateUserDto,
+  ): Promise<User> {
+    return this.userService.signUp(createUserDto).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('유저 정보 생성 오류');
+    });
   }
 
-  // @Get()
-  // // 스웨거 데코레이터
-  // @ApiOperation({
-  //   summary: '유저 전체 조회',
-  //   description: '유저 전체 조회',
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: '전체 유저를 성공적으로 조회했습니다.',
-  //   type: [User],
-  // })
-  // findAll(): Promise<User[]> {
-
-  //   return this.userService.findAll();
-  // }
+  @Get()
+  // 스웨거 데코레이터
+  @ApiOperation({
+    summary: '유저 전체 조회',
+    description: '유저 전체 조회',
+  })
+  @ApiResponse({
+    status: 200,
+    description: '전체 유저를 성공적으로 조회했습니다.',
+    type: [User],
+  })
+  async findAll(): Promise<User[]> {
+    return this.userService.findAll().catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('유저 목록 조회 오류');
+    });
+  }
 
   @Get()
   @UseGuards(AuthGuard('access'))
@@ -72,8 +80,13 @@ export class UserController {
   @ApiResponse({ description: ResponseType.user.fetch.msg })
   @ApiForbiddenResponse({ description: ErrorType.user.forbidden.msg })
   @ApiNotFoundResponse({ description: ErrorType.user.notFound.msg })
-  fetch(@CurrentUser() currentUser: ICurrentUser): Promise<User> {
-    return this.userService.findOne(currentUser);
+  async fetch(@CurrentUser() currentUser: ICurrentUser): Promise<User> {
+    return this.userService.findOne(currentUser).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('유저 정보 조회 오류');
+    });
   }
 
   @Patch()
@@ -85,11 +98,18 @@ export class UserController {
   @ApiResponse({ description: ResponseType.user.update.msg })
   @ApiForbiddenResponse({ description: ErrorType.user.forbidden.msg })
   @ApiNotFoundResponse({ description: ErrorType.user.notFound.msg })
-  update(
+  async update(
     @CurrentUser() currentUser: ICurrentUser,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    return this.userService.update(currentUser, updateUserDto);
+    return this.userService
+      .update(currentUser, updateUserDto)
+      .catch((err: unknown) => {
+        if (err instanceof HttpException) {
+          throw err;
+        }
+        throw new InternalServerErrorException('유저 정보 수정 오류');
+      });
   }
 
   @Delete()
@@ -100,7 +120,12 @@ export class UserController {
   @ApiResponse({ description: ResponseType.user.delete.msg })
   @ApiForbiddenResponse({ description: ErrorType.user.forbidden.msg })
   @ApiNotFoundResponse({ description: ErrorType.user.notFound.msg })
-  delete(@CurrentUser() currentUser: ICurrentUser): Promise<boolean> {
-    return this.userService.delete(currentUser);
+  async delete(@CurrentUser() currentUser: ICurrentUser): Promise<boolean> {
+    return this.userService.delete(currentUser).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('유저 정보 삭제 오류');
+    });
   }
 }

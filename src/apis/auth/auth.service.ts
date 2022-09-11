@@ -69,7 +69,10 @@ export class AuthService {
         'Access-Control-Allow-Origin',
         `${process.env.ALLOW_ORIGIN_URL}`,
       );
-      res.setHeader('Set-Cookie', `refreshToken=${refresh}; Path=/; HttpOnly`);
+      res.setHeader(
+        'Set-Cookie',
+        `refreshToken=${refresh}; path=/; domain=https://project-back.shop; SameSite=None; Secure; httpOnly;`,
+      );
     } catch (e) {
       throw e;
     }

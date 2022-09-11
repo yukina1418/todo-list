@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -8,11 +9,13 @@ import {
 } from 'class-validator';
 
 export class LoginDto {
+  @ApiProperty({ example: 'nestjs@gmail.com' })
   @IsString()
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
+  @ApiProperty({ example: 'qwe123asd456' })
   @IsString()
   @MinLength(6, { message: '최소 6자 이상이어야 합니다.' })
   @MaxLength(12, { message: '최대 12자 이하이어야 합니다.' })

@@ -30,23 +30,17 @@ export class UserService {
 
     const userExists = await this.userRepository.findOne({ where: { email } });
 
-    try {
-      if (userExists) throw new ConflictException();
+    if (userExists) throw new ConflictException('이미 사용중인 이메일입니다.');
 
-      const result = await this.userRepository.save({
-        email,
-        name,
-        password: await bcrypt.hash(password, 10),
-      });
+    const result = await this.userRepository.save({
+      email,
+      name,
+      password: await bcrypt.hash(password, 10),
+    });
 
-      delete result.password;
+    delete result.password;
 
-      return result;
-    } catch (e) {
-      if ((e.status = 409 || e.code === 'ER_DUP_ENTRY'))
-        throw new ConflictException('이미 사용중인 이메일입니다.');
-      throw e;
-    }
+    return result;
   }
 
   /**
@@ -58,15 +52,7 @@ export class UserService {
   async findAll(): Promise<User[]> {
     const results = await this.userRepository.find();
 
-    try {
-      if (results.length === 0)
-        throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
-
-      return results;
-    } catch (e) {
-      if (e.status === 404) return e;
-      return e;
-    }
+    return results;
   }
 
   /**
@@ -80,17 +66,13 @@ export class UserService {
     const isUser = await this.userRepository.findOne({
       where: { id: currentUser.id },
     });
-    try {
-      if (!isUser)
-        throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-      delete isUser.password;
+    if (!isUser)
+      throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-      return isUser;
-    } catch (e) {
-      if (e.status === 404) throw e;
-      throw e;
-    }
+    delete isUser.password;
+
+    return isUser;
   }
 
   /**
@@ -110,22 +92,17 @@ export class UserService {
       where: { id: currentUser.id },
     });
 
-    try {
-      if (!isUser)
-        throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
+    if (!isUser)
+      throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-      const result = await this.userRepository.save({
-        ...isUser,
-        name: name,
-      });
+    const result = await this.userRepository.save({
+      ...isUser,
+      name: name,
+    });
 
-      delete result.password;
+    delete result.password;
 
-      return result;
-    } catch (e) {
-      if (e.status === 404) throw e;
-      throw e;
-    }
+    return result;
   }
 
   /**
@@ -139,18 +116,13 @@ export class UserService {
       where: { id: currentUser.id },
     });
 
-    try {
-      if (!isUser)
-        throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
+    if (!isUser)
+      throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-      const deletedResult = await this.userRepository.softDelete({
-        id: currentUser.id,
-      });
+    const deletedResult = await this.userRepository.softDelete({
+      id: currentUser.id,
+    });
 
-      return deletedResult ? false : true;
-    } catch (e) {
-      if (e.status === 404) throw e;
-      throw e;
-    }
+    return deletedResult ? false : true;
   }
 }
