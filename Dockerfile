@@ -1,10 +1,10 @@
 FROM node:16
 
-WORKDIR /my/
+WORKDIR /my
 
 COPY ./package.json /my/
 COPY ./yarn.lock /my/
-
 RUN yarn install
-COPY . /my
+
+COPY . /my/
 CMD yarn start:dev

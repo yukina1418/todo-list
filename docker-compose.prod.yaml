@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+  my-server:
+    platform: linux/x86_64
+    image: asia.gcr.io/todolist-361909/back:0.0.2
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 3000:3000

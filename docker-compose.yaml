@@ -5,10 +5,10 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - 3000:3000
     volumes:
       - ./src:/my/src
+    ports:
+      - 3000:3000
 
   my-dbserver:
     platform: linux/x86_64
@@ -16,5 +16,6 @@ services:
     environment:
       MYSQL_DATABASE: 'mydb'
       MYSQL_ROOT_PASSWORD: 'root'
+      # TZ: Asia/Seoul
     ports:
       - 3306:3306
