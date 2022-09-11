@@ -1,6 +1,7 @@
 import {
   Column,
   CreateDateColumn,
+  DeleteDateColumn,
   Entity,
   Index,
   PrimaryGeneratedColumn,
@@ -17,7 +18,10 @@ export class User {
   email: string;
 
   @Column()
-  password?: string;
+  password: string;
+
+  @Column({ default: 'Asia/Seoul' })
+  country: string;
 
   @Column()
   name: string;
@@ -27,4 +31,7 @@ export class User {
 
   @UpdateDateColumn()
   updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 }

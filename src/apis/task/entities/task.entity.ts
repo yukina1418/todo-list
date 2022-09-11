@@ -1,4 +1,3 @@
-import { Category } from 'src/apis/category/entities/category.entity';
 import {
   Column,
   CreateDateColumn,
@@ -29,7 +28,7 @@ export class Task {
   @Column()
   fk_category_Id: string;
 
-  @ManyToOne((type) => Category)
-  @JoinColumn({ name: 'fk_category_Id' })
-  category: Category;
+  // @ManyToOne((type) => Category)
+  // @JoinColumn({ name: 'fk_category_Id' })
+  // category: Category;
 }

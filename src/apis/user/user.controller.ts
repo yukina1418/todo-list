@@ -7,8 +7,8 @@ import {
   Delete,
   ValidationPipe,
   UseGuards,
-  Res,
   Req,
+  Injectable,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
@@ -29,7 +29,9 @@ import { User } from './entities/user.entity';
 import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { ResponseType } from 'src/commons/type/response-type';
 import { ErrorType } from 'src/commons/type/error-type';
-import { Request } from 'express';
+
+@Injectable()
+class JwtAccessGuard extends AuthGuard('access') {}
 
 @ApiTags('user')
 @Controller({ path: 'user', version: '1.0' })
@@ -42,29 +44,25 @@ export class UserController {
   @ApiBody({ type: CreateUserDto })
   @ApiCreatedResponse({ description: ResponseType.user.create.msg })
   @ApiConflictResponse({ description: ErrorType.user.conflict.msg })
-  create(
-    @Req() req: Request,
-    @Body(ValidationPipe) createUserDto: CreateUserDto,
-  ): Promise<User> {
-    const offset = new Date().getTimezoneOffset();
-    console.log(offset);
+  create(@Body(ValidationPipe) createUserDto: CreateUserDto): Promise<User> {
     return this.userService.signUp(createUserDto);
   }
 
-  @Get()
-  // 스웨거 데코레이터
-  @ApiOperation({
-    summary: '유저 전체 조회',
-    description: '유저 전체 조회',
-  })
-  @ApiResponse({
-    status: 200,
-    description: '전체 유저를 성공적으로 조회했습니다.',
-    type: [User],
-  })
-  findAll(): Promise<User[]> {
-    return this.userService.findAll();
-  }
+  // @Get()
+  // // 스웨거 데코레이터
+  // @ApiOperation({
+  //   summary: '유저 전체 조회',
+  //   description: '유저 전체 조회',
+  // })
+  // @ApiResponse({
+  //   status: 200,
+  //   description: '전체 유저를 성공적으로 조회했습니다.',
+  //   type: [User],
+  // })
+  // findAll(): Promise<User[]> {
+
+  //   return this.userService.findAll();
+  // }
 
   @Get()
   @UseGuards(AuthGuard('access'))

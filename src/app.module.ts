@@ -8,23 +8,23 @@ import { AuthModule } from './apis/auth/auth.module';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     UserModule,
     AuthModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'my-dbserver',
+      host: process.env.HOST,
       port: 3306,
-      username: 'root',
-      password: 'root',
-      database: 'mydb',
+      username: process.env.USERNAME,
+      password: process.env.PASSWORD,
+      database: process.env.DATABASE,
       entities: [__dirname + '/apis/**/*.entity.*'],
       synchronize: true,
       logging: true,
       retryAttempts: 30,
       retryDelay: 5000,
-    }),
-    ConfigModule.forRoot({
-      isGlobal: true,
     }),
   ],
   controllers: [AppController],
