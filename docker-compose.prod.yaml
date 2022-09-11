@@ -3,7 +3,7 @@ version: '3.7'
 services:
   my-server:
     platform: linux/x86_64
-    image: asia.gcr.io/todolist-361909/back:0.0.2
+    image: asia.gcr.io/todolist-361909/back:0.0.3
     build:
       context: .
       dockerfile: Dockerfile
