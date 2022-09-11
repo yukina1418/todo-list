@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Res, UseGuards } from '@nestjs/common';
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiForbiddenResponse,
   ApiOperation,
@@ -14,6 +15,7 @@ import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { JwtRefreshStrategy } from 'src/commons/strategy/jwt-refresh-strategy';
 import { ResponseType } from 'src/commons/type/response-type';
 import { ErrorType } from 'src/commons/type/error-type';
+import { AuthGuard } from '@nestjs/passport';
 
 @ApiTags('auth')
 @Controller({ version: '1.0' })
@@ -50,12 +52,13 @@ export class AuthController {
    * @returns {string}
    */
   @Post('restoreAccessToken')
-  @UseGuards(JwtRefreshStrategy)
+  @UseGuards(AuthGuard('refresh'))
   @ApiOperation({
     summary: '액세스 토큰 재발행',
     description: '액세스 토큰 재발행 API입니다',
   })
   // 스웨거 데코레이터
+  @ApiBearerAuth('refresh_token')
   @ApiResponse({ description: ResponseType.auth.restoreAccessToken.msg })
   @ApiForbiddenResponse({ description: ErrorType.auth.forbidden.msg })
   async restoreAccessToken(

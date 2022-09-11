@@ -50,7 +50,9 @@ export class UserService {
    */
 
   async findAll(): Promise<User[]> {
-    const results = await this.userRepository.find();
+    const results = await this.userRepository.find({
+      select: ['name', 'email', 'country'],
+    });
 
     return results;
   }

@@ -26,6 +26,16 @@ export function setUpSwagger(app: INestApplication): void {
       },
       'access_token',
     )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        in: 'header',
+      },
+      'refresh_token',
+    )
     .build();
 
   const document = SwaggerModule.createDocument(app, options);
