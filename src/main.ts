@@ -1,12 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { setUpSwagger } from './commons/swagger/swagger';
 import { Database, Resource } from '@admin-bro/typeorm';
+import { json } from 'express';
 import AdminBro from 'admin-bro';
-import { User } from './apis/user/entities/user.entity';
-import { Task } from './apis/task/entities/task.entity';
 import * as adminBroExpress from '@admin-bro/express';
+import { AppModule } from './app.module';
+import { Task } from './apis/task';
+import { User } from './apis/user';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -38,6 +39,8 @@ async function bootstrap() {
     },
   );
   app.use(adminBro.options.rootPath, router);
+  app.use(json());
+  app.enableCors({ origin: true, credentials: true });
 
   setUpSwagger(app);
   await app.listen(3000);
