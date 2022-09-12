@@ -4,11 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { CreateUserDTO } from './dto/create-user.dto';
-import { UpdateUserDTO } from './dto/update-user.dto';
-import { User } from './entities/user.entity';
+
+import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
 import { ICurrentUser } from 'src/commons/decorator/current-user';
+import { CreateUserDTO, UpdateUserDTO } from './dto';
 
 @Injectable()
 export class UserService {

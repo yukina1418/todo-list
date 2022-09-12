@@ -5,15 +5,12 @@ import {
   Body,
   Patch,
   Delete,
-  ValidationPipe,
   UseGuards,
   HttpException,
   InternalServerErrorException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
-import { CreateUserDTO } from './dto/create-user.dto';
-import { UpdateUserDTO } from './dto/update-user.dto';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -25,10 +22,11 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { User } from './entities/user.entity';
+import { User } from './user.entity';
 import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { ResponseType } from 'src/commons/type/response-type';
 import { ErrorType } from 'src/commons/type/error-type';
+import { CreateUserDTO, UpdateUserDTO } from './dto';
 
 @ApiTags('유저')
 @Controller({ path: 'users', version: '1.0' })
@@ -41,7 +39,7 @@ export class UserController {
   @ApiBody({ type: CreateUserDTO })
   @ApiCreatedResponse({ description: ResponseType.user.create.msg })
   @ApiConflictResponse({ description: ErrorType.user.conflict.msg })
-  async create(@Body(ValidationPipe) createUser: CreateUserDTO): Promise<User> {
+  async create(@Body() createUser: CreateUserDTO): Promise<User> {
     return this.userService.signUp(createUser).catch((err: unknown) => {
       if (err instanceof HttpException) {
         throw err;

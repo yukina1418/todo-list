@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
-import { CreateUserDto } from '../dto/create-user.dto';
-import { User } from '../entities/user.entity';
-import { UserService } from '../user.service';
-import { UpdateUserDto } from '../dto/update-user.dto';
+
+import { User } from './user.entity';
+import { UserService } from './user.service';
+import { CreateUserDTO, UpdateUserDTO } from './dto';
 import { ICurrentUser } from 'src/commons/decorator/current-user';
 import { ArgumentMetadata, ValidationPipe } from '@nestjs/common';
 
@@ -40,13 +40,13 @@ describe('UserService', () => {
     updatedAt: '2022-07-27T08:32:50.701Z',
   };
 
-  const createUserDto: CreateUserDto = {
+  const createUserDto: CreateUserDTO = {
     name: '테스트',
     email: 'test@gmail.com',
     password: 'test123456',
   };
 
-  const updateUserDto: UpdateUserDto = {
+  const updateUserDto: UpdateUserDTO = {
     name: '업데이트 데이터',
   };
 
@@ -61,7 +61,7 @@ describe('UserService', () => {
 
   const metadata: ArgumentMetadata = {
     type: 'body',
-    metatype: CreateUserDto,
+    metatype: CreateUserDTO,
     data: '',
   };
 

@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import {
   IsEmail,
   IsNotEmpty,
@@ -40,4 +40,14 @@ export class CreateUserDTO {
     message: '비밀번호는 6~18자리의 영문 혹은 숫자의 조합만 가능합니다.',
   })
   password: string;
+}
+export class UpdateUserDTO extends PickType(CreateUserDTO, ['name']) {
+  @ApiProperty({
+    example: '랄라라',
+    description: '회원의 닉네임',
+    required: true,
+  })
+  @IsNotEmpty({ message: '공백으로 남겨놓으실 수 없습니다.' })
+  @IsString({ message: '문자열만 입력이 가능합니다.' })
+  name: string;
 }
