@@ -3,14 +3,14 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ICurrentUser } from 'src/commons/decorator/current-user';
 import { Between, DataSource } from 'typeorm';
-import { User } from '../user/entities/user.entity';
-import { CreateTaskDTO } from './dto/create-task.dto';
-import { UpdateTaskDTO } from './dto/update-task.dto';
-import { Task } from './entities/task.entity';
 import dayjs from 'dayjs';
 import localeData from 'dayjs/plugin/localeData';
+import { ICurrentUser } from 'src/commons/decorator/current-user';
+import { User } from '../user/user.entity';
+
+import { GetTodoListParams, CreateTaskDTO, UpdateTaskDTO } from './dto';
+import { Task } from './task.entity';
 
 dayjs.extend(localeData);
 
@@ -63,11 +63,18 @@ export class TaskService {
    * @Description 요청한 날의 투두리스트를 반환합니다.
    *
    * @param user 유저 ID
+   * @param params 조회를 요청한 날짜
    * @returns Promise<Task[]>
    */
-  async getTasksByNow(user: ICurrentUser): Promise<Task[]> {
-    const start = dayjs(new Date().setHours(0, 0, 0, 0)).toDate();
-    const end = dayjs(new Date().setHours(23, 59, 59, 999)).toDate();
+  async getTasksByNow(
+    user: ICurrentUser,
+    params: GetTodoListParams,
+  ): Promise<Task[]> {
+    const { year, month, day } = params;
+
+    const date = new Date(year, month - 1, day);
+    const start = dayjs(date.setHours(0, 0, 0, 0)).toDate();
+    const end = dayjs(date.setHours(23, 59, 59, 999)).toDate();
 
     const tasks = await this.dataSource.manager.find(Task, {
       where: { fk_user_id: user.id, createdAt: Between(start, end) },
@@ -79,10 +86,16 @@ export class TaskService {
    * @Description 요청한 주간의 투두리스트를 반환합니다.
    *
    * @param user 유저 ID
+   * @param params 조회를 요청한 날짜
    * @returns Promise<Task[]>
    */
-  async getTasksByWeek(user: ICurrentUser): Promise<Task[]> {
-    const date = new Date();
+  async getTasksByWeek(
+    user: ICurrentUser,
+    params: GetTodoListParams,
+  ): Promise<Task[]> {
+    const { year, month, day } = params;
+
+    const date = new Date(year, month - 1, day);
     const start = dayjs(date).startOf('week').toDate();
     const end = dayjs(date).endOf('week').toDate();
 
@@ -96,11 +109,13 @@ export class TaskService {
    * @Description 요청한 월간의 투두리스트를 반환합니다.
    *
    * @param user 유저 ID
-   * @param month 조회를 요청한 월
+   * @param params 조회를 요청한 날짜
    * @returns Promise<Task[]>
    */
-  async getTasksByMonth(user: ICurrentUser, month: number) {
-    const date = new Date(2022, month - 1);
+  async getTasksByMonth(user: ICurrentUser, params: GetTodoListParams) {
+    const { year, month } = params;
+
+    const date = new Date(year, month - 1);
     const start = dayjs(date).startOf('month').toDate();
     const end = dayjs(date).endOf('month').toDate();
 
