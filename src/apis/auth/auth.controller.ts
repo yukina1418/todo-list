@@ -17,7 +17,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login-dto';
+import { LoginDto } from './dto';
 import { Response } from 'express';
 import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { ResponseType } from 'src/commons/type/response-type';
