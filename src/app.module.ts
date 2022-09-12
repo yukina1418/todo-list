@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { UserModule } from './apis/user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './apis/auth/auth.module';
+import { TaskModule } from './apis/task/task.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { AuthModule } from './apis/auth/auth.module';
     }),
     UserModule,
     AuthModule,
+    TaskModule,
     TypeOrmModule.forRoot({
       type: 'mysql',
       host: process.env.HOST,
