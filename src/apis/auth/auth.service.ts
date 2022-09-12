@@ -28,24 +28,19 @@ export class AuthService {
       where: { email: email },
     });
 
-    try {
-      if (!userData)
-        throw new UnauthorizedException(
-          '아이디 혹은 비밀번호가 일치하지 않습니다.',
-        );
+    if (!userData)
+      throw new UnauthorizedException(
+        '아이디 혹은 비밀번호가 일치하지 않습니다.',
+      );
 
-      const isMatched = await bcrypt.compare(password, userData.password);
+    const isMatched = await bcrypt.compare(password, userData.password);
 
-      if (!isMatched)
-        throw new UnauthorizedException(
-          '아이디 혹은 비밀번호가 일치하지 않습니다.',
-        );
+    if (!isMatched)
+      throw new UnauthorizedException(
+        '아이디 혹은 비밀번호가 일치하지 않습니다.',
+      );
 
-      return userData;
-    } catch (e) {
-      if (e.status === 401) throw e;
-      throw e;
-    }
+    return userData;
   }
 
   /**

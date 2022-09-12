@@ -1,4 +1,12 @@
-import { Controller, Post, Body, Res, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Res,
+  UseGuards,
+  InternalServerErrorException,
+  HttpException,
+} from '@nestjs/common';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -12,7 +20,6 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login-dto';
 import { Response } from 'express';
 import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
-import { JwtRefreshStrategy } from 'src/commons/strategy/jwt-refresh-strategy';
 import { ResponseType } from 'src/commons/type/response-type';
 import { ErrorType } from 'src/commons/type/error-type';
 import { AuthGuard } from '@nestjs/passport';
@@ -39,7 +46,14 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Body() loginDto: LoginDto,
   ): Promise<string> {
-    const user = await this.authService.checkUser(loginDto);
+    const user = await this.authService
+      .checkUser(loginDto)
+      .catch((err: unknown) => {
+        if (err instanceof HttpException) {
+          throw err;
+        }
+        throw new InternalServerErrorException('로그인 실패 서버 오류');
+      });
 
     this.authService.getRefreshToken(user, res);
     return this.authService.getAccessToken({ user });
