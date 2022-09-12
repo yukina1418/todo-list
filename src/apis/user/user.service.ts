@@ -3,36 +3,34 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { DataSource } from 'typeorm';
+import { CreateUserDTO } from './dto/create-user.dto';
+import { UpdateUserDTO } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { ICurrentUser } from 'src/commons/decorator/current-user';
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-  ) {}
+  constructor(private readonly dataSource: DataSource) {}
 
   /**
    * @description 유저를 생성합니다.
    * 
-     @param createUserDto 생성할 유저 정보
+     @param createUser 생성할 유저 정보
    * @returns {Promise<User>} 생성된 유저의 정보를 반환합니다.
    */
 
-  async signUp(createUserDto: CreateUserDto): Promise<User> {
-    const { email, name, password } = createUserDto;
+  async signUp(createUser: CreateUserDTO): Promise<User> {
+    const { email, name, password } = createUser;
 
-    const userExists = await this.userRepository.findOne({ where: { email } });
+    const userExists = await this.dataSource.manager.findOne(User, {
+      where: { email },
+    });
 
     if (userExists) throw new ConflictException('이미 사용중인 이메일입니다.');
 
-    const result = await this.userRepository.save({
+    const result = await this.dataSource.manager.save(User, {
       email,
       name,
       password: await bcrypt.hash(password, 10),
@@ -50,7 +48,7 @@ export class UserService {
    */
 
   async findAll(): Promise<User[]> {
-    const results = await this.userRepository.find({
+    const results = await this.dataSource.manager.find(User, {
       select: ['name', 'email', 'country'],
     });
 
@@ -65,7 +63,7 @@ export class UserService {
    */
 
   async findOne(currentUser: ICurrentUser): Promise<User> {
-    const isUser = await this.userRepository.findOne({
+    const isUser = await this.dataSource.manager.findOne(User, {
       where: { id: currentUser.id },
     });
 
@@ -86,18 +84,18 @@ export class UserService {
    */
   async update(
     currentUser: ICurrentUser,
-    updateUserDto: UpdateUserDto,
+    updateUser: UpdateUserDTO,
   ): Promise<User> {
-    const { name } = updateUserDto;
+    const { name } = updateUser;
 
-    const isUser = await this.userRepository.findOne({
+    const isUser = await this.dataSource.manager.findOne(User, {
       where: { id: currentUser.id },
     });
 
     if (!isUser)
       throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-    const result = await this.userRepository.save({
+    const result = await this.dataSource.manager.save(User, {
       ...isUser,
       name: name,
     });
@@ -114,14 +112,14 @@ export class UserService {
    * @returns {Promise<boolean>} 유저 정보를 반환합니다.
    */
   async delete(currentUser: ICurrentUser): Promise<string> {
-    const isUser = await this.userRepository.findOne({
+    const isUser = await this.dataSource.manager.findOne(User, {
       where: { id: currentUser.id },
     });
 
     if (!isUser)
       throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
-    const deletedResult = await this.userRepository.softDelete({
+    const deletedResult = await this.dataSource.manager.softDelete(User, {
       id: currentUser.id,
     });
 

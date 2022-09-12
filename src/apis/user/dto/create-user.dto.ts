@@ -8,7 +8,7 @@ import {
   MinLength,
 } from 'class-validator';
 
-export class CreateUserDto {
+export class CreateUserDTO {
   @ApiProperty({
     example: '랄라라',
     description: '회원의 닉네임',

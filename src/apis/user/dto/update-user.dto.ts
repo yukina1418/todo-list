@@ -1,8 +1,8 @@
-import { CreateUserDto } from './create-user.dto';
+import { CreateUserDTO } from './create-user.dto';
 import { IsNotEmpty, IsString } from 'class-validator';
 import { ApiProperty, PickType } from '@nestjs/swagger';
 
-export class UpdateUserDto extends PickType(CreateUserDto, ['name']) {
+export class UpdateUserDTO extends PickType(CreateUserDTO, ['name']) {
   @ApiProperty({
     example: '랄라라',
     description: '회원의 닉네임',
