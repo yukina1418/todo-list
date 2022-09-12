@@ -1,5 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
+  BaseEntity,
   Column,
   CreateDateColumn,
   DeleteDateColumn,
@@ -11,7 +12,7 @@ import {
 
 @Entity()
 @Index(['email'], { unique: true })
-export class User {
+export class User extends BaseEntity {
   @ApiProperty({ description: '유저 고유 넘버링' })
   @PrimaryGeneratedColumn('uuid')
   id: string;
