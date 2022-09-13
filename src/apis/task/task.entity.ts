@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from 'src/apis/user/user.entity';
 import {
   BaseEntity,
   Column,
@@ -10,6 +9,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { User } from '../user';
 
 @Entity()
 export class Task extends BaseEntity {

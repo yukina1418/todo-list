@@ -1,30 +1,24 @@
-import { ApiProperty, PartialType } from '@nestjs/swagger';
-import { IsNotEmpty, IsNumber, IsString, Max, Min } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
-export class GetTodoListParams {
-  @ApiProperty({ description: '조회할 년', type: 'number', example: 2022 })
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(2000)
-  @Max(2050)
-  year: number;
-
-  @ApiProperty({ description: '조회할 월', type: 'number', example: 9 })
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  @Max(12)
-  month: number;
-
-  @ApiProperty({ description: '조회할 일', type: 'number', example: 12 })
-  @IsNotEmpty()
-  @IsNumber()
-  @Min(1)
-  @Max(31)
-  day?: number;
+export class GetDateParams {
+  @ApiProperty({ description: '날짜' })
+  date: Date;
 }
 
-export class CreateTaskDTO {
+export class GetTaskParams {
+  @ApiProperty({ description: '조회할 Task ID' })
+  id: number;
+}
+
+export class UpdateTaskParams extends GetTaskParams {
+  @ApiPropertyOptional({ description: '상태값' })
+  @IsBoolean({ message: '상태값은 boolean형식이어야 합니다.' })
+  @IsOptional()
+  status?: boolean;
+}
+
+export class CreateTaskDTO extends GetDateParams {
   @ApiProperty({
     example: '이닦기',
     description: '할일의 제목',

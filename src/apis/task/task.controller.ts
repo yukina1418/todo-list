@@ -1,33 +1,35 @@
 import {
-  Controller,
   Get,
+  Query,
   Post,
   Body,
   Patch,
   Param,
   Delete,
   UseGuards,
+  Controller,
+  ParseIntPipe,
   HttpException,
   InternalServerErrorException,
-  ParseIntPipe,
-  Query,
 } from '@nestjs/common';
-import { TaskService } from './task.service';
 import {
-  ApiBearerAuth,
   ApiBody,
+  ApiTags,
+  ApiParam,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiNotFoundResponse,
   ApiForbiddenResponse,
   ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiParam,
-  ApiTags,
 } from '@nestjs/swagger';
-import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
 import { AuthGuard } from '@nestjs/passport';
-import { GetTodoListParams, CreateTaskDTO, UpdateTaskDTO } from './dto';
+import { CurrentUser } from '@app/decorator/decorators';
+
+import { CreateTaskDTO, GetDateParams, UpdateTaskDTO, UpdateTaskParams } from './dto';
+import { TaskService } from './task.service';
 import { Task } from './task.entity';
+import { User } from '../user';
 
 @ApiTags('할일')
 @ApiBearerAuth('access_token')
@@ -42,11 +44,7 @@ export class TaskController {
     description: '투두 한개를 생성합니다.',
   })
   @ApiBody({ type: CreateTaskDTO })
-  async create(
-    @CurrentUser() user: ICurrentUser,
-    @Body() createTask: CreateTaskDTO,
-  ): Promise<Task> {
-    console.log(user);
+  async create(@CurrentUser() user: User, @Body() createTask: CreateTaskDTO): Promise<Task> {
     return this.taskService.create(user, createTask).catch((err: unknown) => {
       if (err instanceof HttpException) {
         throw err;
@@ -65,10 +63,7 @@ export class TaskController {
   @ApiNotFoundResponse({ description: '조회한 투두가 존재하지 않을 경우 발생' })
   @ApiForbiddenResponse({ description: '본인이 작성한 투두가 아닌 경우 발생' })
   @ApiInternalServerErrorResponse({ description: '서버에 문제 있을 경우 발생' })
-  async findTaskById(
-    @CurrentUser() user: ICurrentUser,
-    @Param('id') id: number,
-  ): Promise<Task> {
+  async findTaskById(@CurrentUser() user: User, @Param('id') id: number): Promise<Task> {
     return await this.taskService.getTask(user, id).catch((err: unknown) => {
       if (err instanceof HttpException) {
         throw err;
@@ -82,21 +77,15 @@ export class TaskController {
     summary: '당일 투두리스트 조회',
     description: '당일 투두리스트를 조회합니다.',
   })
-  @ApiOkResponse({ description: 'OK', type: Task })
+  @ApiOkResponse({ description: 'OK', type: [Task] })
   @ApiInternalServerErrorResponse({ description: '서버에 문제 있을 경우 발생' })
-  async findTasksByNow(
-    @CurrentUser() user: ICurrentUser,
-    @Query() params: GetTodoListParams,
-  ): Promise<Task[]> {
-    return this.taskService
-      .getTasksByNow(user, params)
-      .catch((err: unknown) => {
-        if (err instanceof HttpException) {
-          throw err;
-        }
-        console.log(err);
-        throw new InternalServerErrorException('투두 당일 조회 서버 오류');
-      });
+  async findTasksByNow(@CurrentUser() user: User, @Query() params: GetDateParams): Promise<Task[]> {
+    return this.taskService.getTasksByDay(user, params).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('투두 당일 조회 서버 오류');
+    });
   }
 
   @Get('list/week')
@@ -106,19 +95,14 @@ export class TaskController {
   })
   @ApiOkResponse({ description: 'OK', type: [Task] })
   @ApiInternalServerErrorResponse({ description: '서버에 문제 있을 경우 발생' })
-  async findTasksByWeak(
-    @CurrentUser() user: ICurrentUser,
-    @Query() params: GetTodoListParams,
-  ): Promise<Task[]> {
-    return this.taskService
-      .getTasksByWeek(user, params)
-      .catch((err: unknown) => {
-        if (err instanceof HttpException) {
-          throw err;
-        }
-        console.log(err);
-        throw new InternalServerErrorException('투두 주간 조회 서버 오류');
-      });
+  async findTasksByWeak(@CurrentUser() user: User, @Query() params: GetDateParams): Promise<Task[]> {
+    return this.taskService.getTasksByWeek(user, params).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      console.log(err);
+      throw new InternalServerErrorException('투두 주간 조회 서버 오류');
+    });
   }
 
   @Get('list/month')
@@ -128,19 +112,14 @@ export class TaskController {
   })
   @ApiOkResponse({ description: 'OK', type: [Task] })
   @ApiInternalServerErrorResponse({ description: '서버에 문제 있을 경우 발생' })
-  async findTasksByMonth(
-    @CurrentUser() user: ICurrentUser,
-    @Query() params: GetTodoListParams,
-  ): Promise<Task[]> {
-    return this.taskService
-      .getTasksByMonth(user, params)
-      .catch((err: unknown) => {
-        if (err instanceof HttpException) {
-          throw err;
-        }
-        console.log(err);
-        throw new InternalServerErrorException('투두 월간 조회 서버 오류');
-      });
+  async findTasksByMonth(@CurrentUser() user: User, @Query() params: GetDateParams): Promise<Task[]> {
+    return this.taskService.getTasksByMonth(user, params).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      console.log(err);
+      throw new InternalServerErrorException('투두 월간 조회 서버 오류');
+    });
   }
 
   @Patch(':id')
@@ -155,18 +134,30 @@ export class TaskController {
   @ApiForbiddenResponse({ description: '본인이 작성한 투두가 아닌 경우 발생' })
   @ApiInternalServerErrorResponse({ description: '서버에 문제 있을 경우 발생' })
   async updateTaskById(
-    @CurrentUser() user: ICurrentUser,
+    @CurrentUser() user: User,
     @Param('id', ParseIntPipe) id: number,
     @Body() updateTask: UpdateTaskDTO,
   ): Promise<Task> {
-    return this.taskService
-      .updateTask(user, id, updateTask)
-      .catch((err: unknown) => {
-        if (err instanceof HttpException) {
-          throw err;
-        }
-        throw new InternalServerErrorException('투두 월간 조회 서버 오류');
-      });
+    return this.taskService.updateTask(user, id, updateTask).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('투두 월간 조회 서버 오류');
+    });
+  }
+
+  @Patch('status/:id')
+  @ApiOperation({ summary: '투두 상태 변경', description: '투두 상태를 변경합니다.' })
+  @ApiNotFoundResponse({ description: '조회한 투두가 존재하지 않을 경우 발생' })
+  @ApiForbiddenResponse({ description: '본인이 작성한 투두가 아닌 경우 발생' })
+  async updateTaskStatusById(@CurrentUser() user: User, @Param() params: UpdateTaskParams): Promise<Task> {
+    return this.taskService.updateTaskStatus(user, params).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      console.log(err);
+      throw new InternalServerErrorException('투두 월간 조회 서버 오류');
+    });
   }
 
   @Delete(':id')
@@ -178,10 +169,7 @@ export class TaskController {
   @ApiNotFoundResponse({ description: '조회한 투두가 존재하지 않을 경우 발생' })
   @ApiForbiddenResponse({ description: '본인이 작성한 투두가 아닌 경우 발생' })
   @ApiInternalServerErrorResponse({ description: '서버에 문제 있을 경우 발생' })
-  async deleteTaskById(
-    @CurrentUser() user: ICurrentUser,
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<string> {
+  async deleteTaskById(@CurrentUser() user: User, @Param('id', ParseIntPipe) id: number): Promise<string> {
     return this.taskService.deleteTask(user, id).catch((err: unknown) => {
       if (err instanceof HttpException) {
         throw err;
