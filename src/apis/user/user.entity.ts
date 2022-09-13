@@ -1,3 +1,4 @@
+import { ICurrentUser } from '@app/decorator/decorators';
 import { ApiProperty } from '@nestjs/swagger';
 import {
   BaseEntity,
@@ -12,7 +13,7 @@ import {
 
 @Entity()
 @Index(['email'], { unique: true })
-export class User extends BaseEntity {
+export class User extends BaseEntity implements ICurrentUser {
   @ApiProperty({ description: '유저 고유 넘버링' })
   @PrimaryGeneratedColumn('uuid')
   id: string;

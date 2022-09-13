@@ -9,8 +9,6 @@ import {
   HttpException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { UserService } from './user.service';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -22,11 +20,14 @@ import {
   ApiOperation,
   ApiTags,
 } from '@nestjs/swagger';
-import { User } from './user.entity';
-import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
-import { ResponseType } from 'src/commons/type/response-type';
-import { ErrorType } from 'src/commons/type/error-type';
+import { AuthGuard } from '@nestjs/passport';
+
 import { CreateUserDTO, UpdateUserDTO } from './dto';
+import { UserService } from './user.service';
+import { User } from './user.entity';
+
+import { CurrentUser, ICurrentUser } from '@app/decorator/decorators';
+import { ErrorType, ResponseType } from '@app/swagger/response-message';
 
 @ApiTags('유저')
 @Controller({ path: 'users', version: '1.0' })
@@ -94,18 +95,13 @@ export class UserController {
   @ApiOkResponse({ description: ResponseType.user.update.msg })
   @ApiForbiddenResponse({ description: ErrorType.user.forbidden.msg })
   @ApiNotFoundResponse({ description: ErrorType.user.notFound.msg })
-  async update(
-    @CurrentUser() currentUser: ICurrentUser,
-    @Body() updateUser: UpdateUserDTO,
-  ): Promise<User> {
-    return this.userService
-      .update(currentUser, updateUser)
-      .catch((err: unknown) => {
-        if (err instanceof HttpException) {
-          throw err;
-        }
-        throw new InternalServerErrorException('유저 정보 수정 서버 오류');
-      });
+  async update(@CurrentUser() currentUser: ICurrentUser, @Body() updateUser: UpdateUserDTO): Promise<User> {
+    return this.userService.update(currentUser, updateUser).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('유저 정보 수정 서버 오류');
+    });
   }
 
   @Delete()

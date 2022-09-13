@@ -1,11 +1,12 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { User } from '../user/user.entity';
-import { LoginDto } from './dto';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import { Repository } from 'typeorm';
 import { Response } from 'express';
+import * as bcrypt from 'bcrypt';
+
+import { LoginDto } from './dto';
+import { User } from '../user/user.entity';
 
 @Injectable()
 export class AuthService {
@@ -28,17 +29,11 @@ export class AuthService {
       where: { email: email },
     });
 
-    if (!userData)
-      throw new UnauthorizedException(
-        '아이디 혹은 비밀번호가 일치하지 않습니다.',
-      );
+    if (!userData) throw new UnauthorizedException('아이디 혹은 비밀번호가 일치하지 않습니다.');
 
     const isMatched = await bcrypt.compare(password, userData.password);
 
-    if (!isMatched)
-      throw new UnauthorizedException(
-        '아이디 혹은 비밀번호가 일치하지 않습니다.',
-      );
+    if (!isMatched) throw new UnauthorizedException('아이디 혹은 비밀번호가 일치하지 않습니다.');
 
     return userData;
   }
@@ -60,10 +55,7 @@ export class AuthService {
         },
       );
 
-      res.setHeader(
-        'Access-Control-Allow-Origin',
-        `${process.env.ALLOW_ORIGIN_URL}`,
-      );
+      res.setHeader('Access-Control-Allow-Origin', `${process.env.ALLOW_ORIGIN_URL}`);
       res.setHeader(
         'Set-Cookie',
         `refreshToken=${refresh}; path=/; domain=https://project-back.shop; SameSite=None; Secure; httpOnly;`,

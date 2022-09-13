@@ -1,14 +1,11 @@
-import {
-  ConflictException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-
-import { User } from './user.entity';
 import * as bcrypt from 'bcrypt';
-import { ICurrentUser } from 'src/commons/decorator/current-user';
+
 import { CreateUserDTO, UpdateUserDTO } from './dto';
+import { User } from './user.entity';
+
+import { ICurrentUser } from '@app/decorator/decorators';
 
 @Injectable()
 export class UserService {
@@ -67,8 +64,7 @@ export class UserService {
       where: { id: currentUser.id },
     });
 
-    if (!isUser)
-      throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
+    if (!isUser) throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
     delete isUser.password;
 
@@ -82,18 +78,14 @@ export class UserService {
    * @param updateUserDto 업데이트를 할 유저의 정보
    * @returns {Promise<User>} 유저 정보를 반환합니다.
    */
-  async update(
-    currentUser: ICurrentUser,
-    updateUser: UpdateUserDTO,
-  ): Promise<User> {
+  async update(currentUser: ICurrentUser, updateUser: UpdateUserDTO): Promise<User> {
     const { name } = updateUser;
 
     const isUser = await this.dataSource.manager.findOne(User, {
       where: { id: currentUser.id },
     });
 
-    if (!isUser)
-      throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
+    if (!isUser) throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
     const result = await this.dataSource.manager.save(User, {
       ...isUser,
@@ -116,8 +108,7 @@ export class UserService {
       where: { id: currentUser.id },
     });
 
-    if (!isUser)
-      throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
+    if (!isUser) throw new NotFoundException('유저 데이터가 존재하지 않습니다.');
 
     const deletedResult = await this.dataSource.manager.softDelete(User, {
       id: currentUser.id,

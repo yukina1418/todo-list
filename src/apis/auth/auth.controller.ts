@@ -1,30 +1,23 @@
+import { Res, Post, Body, UseGuards, Controller, HttpException, InternalServerErrorException } from '@nestjs/common';
 import {
-  Controller,
-  Post,
-  Body,
-  Res,
-  UseGuards,
-  InternalServerErrorException,
-  HttpException,
-} from '@nestjs/common';
-import {
-  ApiBearerAuth,
   ApiBody,
-  ApiForbiddenResponse,
-  ApiOperation,
-  ApiResponse,
   ApiTags,
+  ApiOperation,
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiForbiddenResponse,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { AuthService } from './auth.service';
-import { LoginDto } from './dto';
-import { Response } from 'express';
-import { CurrentUser, ICurrentUser } from 'src/commons/decorator/current-user';
-import { ResponseType } from 'src/commons/type/response-type';
-import { ErrorType } from 'src/commons/type/error-type';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 
-@ApiTags('auth')
+import { LoginDto } from './dto';
+import { AuthService } from './auth.service';
+
+import { ErrorType, ResponseType } from '@app/swagger/response-message';
+import { CurrentUser, ICurrentUser } from '@app/decorator/decorators';
+
+@ApiTags('인증')
 @Controller({ version: '1.0' })
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -40,20 +33,15 @@ export class AuthController {
   // 스웨거 설정
   @ApiBody({ type: LoginDto })
   @ApiOperation({ summary: '로그인', description: '로그인 API입니다' })
-  @ApiResponse({ description: ResponseType.auth.login.msg })
+  @ApiOkResponse({ description: ResponseType.auth.login.msg })
   @ApiUnauthorizedResponse({ description: ErrorType.auth.unauthorized.msg })
-  async login(
-    @Res({ passthrough: true }) res: Response,
-    @Body() loginDto: LoginDto,
-  ): Promise<string> {
-    const user = await this.authService
-      .checkUser(loginDto)
-      .catch((err: unknown) => {
-        if (err instanceof HttpException) {
-          throw err;
-        }
-        throw new InternalServerErrorException('로그인 실패 서버 오류');
-      });
+  async login(@Res({ passthrough: true }) res: Response, @Body() loginDto: LoginDto): Promise<string> {
+    const user = await this.authService.checkUser(loginDto).catch((err: unknown) => {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new InternalServerErrorException('로그인 실패 서버 오류');
+    });
 
     this.authService.getRefreshToken(user, res);
     return this.authService.getAccessToken({ user });
@@ -73,11 +61,9 @@ export class AuthController {
   })
   // 스웨거 데코레이터
   @ApiBearerAuth('refresh_token')
-  @ApiResponse({ description: ResponseType.auth.restoreAccessToken.msg })
+  @ApiOkResponse({ description: ResponseType.auth.restoreAccessToken.msg })
   @ApiForbiddenResponse({ description: ErrorType.auth.forbidden.msg })
-  async restoreAccessToken(
-    @CurrentUser() currentUser: ICurrentUser,
-  ): Promise<string> {
+  async restoreAccessToken(@CurrentUser() currentUser: ICurrentUser): Promise<string> {
     return this.authService.getAccessToken({ user: currentUser });
   }
 }

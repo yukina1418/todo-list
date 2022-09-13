@@ -1,11 +1,12 @@
+import { ArgumentMetadata, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Repository } from 'typeorm';
 
-import { User } from './user.entity';
-import { UserService } from './user.service';
 import { CreateUserDTO, UpdateUserDTO } from './dto';
-import { ICurrentUser } from 'src/commons/decorator/current-user';
-import { ArgumentMetadata, ValidationPipe } from '@nestjs/common';
+import { UserService } from './user.service';
+import { User } from './user.entity';
+
+import { ICurrentUser } from '@app/decorator/decorators';
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
 
@@ -109,9 +110,7 @@ describe('UserService', () => {
 
       userRepository.findOne.mockResolvedValue(true);
 
-      await expect(userService.signUp(createUserDto)).rejects.toThrowError(
-        '이미 사용중인 이메일입니다.',
-      );
+      await expect(userService.signUp(createUserDto)).rejects.toThrowError('이미 사용중인 이메일입니다.');
       expect(userRepositorySpySave).toHaveBeenCalledTimes(0);
       expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
     });
@@ -133,9 +132,7 @@ describe('UserService', () => {
       createUserDto.name = '';
 
       await target.transform(createUserDto, metadata).catch((e) => {
-        expect(e.response.message).toEqual([
-          '공백으로 남겨놓으실 수 없습니다.',
-        ]);
+        expect(e.response.message).toEqual(['공백으로 남겨놓으실 수 없습니다.']);
       });
     });
 
@@ -144,10 +141,7 @@ describe('UserService', () => {
       createUserDto.email = '';
 
       await target.transform(createUserDto, metadata).catch((e) => {
-        expect(e.response.message).toEqual([
-          'email must be an email',
-          '공백으로 남겨놓으실 수 없습니다.',
-        ]);
+        expect(e.response.message).toEqual(['email must be an email', '공백으로 남겨놓으실 수 없습니다.']);
       });
     });
   });
@@ -167,9 +161,7 @@ describe('UserService', () => {
       const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
       userRepository.findOne.mockResolvedValue(false);
 
-      await expect(userService.findOne(currentUser)).rejects.toThrowError(
-        '유저 데이터가 존재하지 않습니다.',
-      );
+      await expect(userService.findOne(currentUser)).rejects.toThrowError('유저 데이터가 존재하지 않습니다.');
       expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
     });
   });
@@ -192,9 +184,9 @@ describe('UserService', () => {
       const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
       userRepository.findOne.mockResolvedValue(false);
 
-      await expect(
-        userService.update(currentUser, updateUserDto),
-      ).rejects.toThrowError('유저 데이터가 존재하지 않습니다.');
+      await expect(userService.update(currentUser, updateUserDto)).rejects.toThrowError(
+        '유저 데이터가 존재하지 않습니다.',
+      );
       expect(userRepositorySpySave).toHaveBeenCalledTimes(0);
       expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
     });
@@ -202,10 +194,7 @@ describe('UserService', () => {
   describe('delete', () => {
     it('유저 삭제 성공', async () => {
       const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
-      const userRepositorySpySoftDelete = jest.spyOn(
-        userRepository,
-        'softDelete',
-      );
+      const userRepositorySpySoftDelete = jest.spyOn(userRepository, 'softDelete');
 
       userRepository.findOne.mockResolvedValue(findOne);
       userRepository.softDelete.mockResolvedValue(true);
@@ -218,15 +207,12 @@ describe('UserService', () => {
     });
     it('유저 삭제 실패', async () => {
       const userRepositorySpyFindOne = jest.spyOn(userRepository, 'findOne');
-      const userRepositorySpySoftDelete = jest.spyOn(
-        userRepository,
-        'softDelete',
-      );
+      const userRepositorySpySoftDelete = jest.spyOn(userRepository, 'softDelete');
       userRepository.findOne.mockResolvedValue(false);
 
-      await expect(
-        userService.update(currentUser, updateUserDto),
-      ).rejects.toThrowError('유저 데이터가 존재하지 않습니다.');
+      await expect(userService.update(currentUser, updateUserDto)).rejects.toThrowError(
+        '유저 데이터가 존재하지 않습니다.',
+      );
       expect(userRepositorySpySoftDelete).toHaveBeenCalledTimes(0);
       expect(userRepositorySpyFindOne).toHaveBeenCalledTimes(1);
     });
