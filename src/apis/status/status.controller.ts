@@ -1,12 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+
 import { CreateStatusDTO, UpdateStatusDTO } from './dto';
 import { StatusService } from './status.service';
 
